@@ -47,6 +47,9 @@ kotlin {
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        named("wasmJsMain") {
+            languageSettings.optIn("kotlin.js.ExperimentalWasmJsInterop")
+        }
         named("desktopMain") {
             dependencies {
                 implementation(compose.desktop.currentOs)
