@@ -1,0 +1,25 @@
+# Gradle / build outputs
+.gradle/
+build/
+.kotlin/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local machine config
+local.properties
+*.log
+
+# IDEs
+.idea/
+*.iml
+.fleet/
+.vscode/
+out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Android
+captures/
+*.apk
+*.aab
