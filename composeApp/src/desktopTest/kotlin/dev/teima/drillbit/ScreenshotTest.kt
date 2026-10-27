@@ -14,13 +14,15 @@ import dev.teima.drillbit.ui.theme.DrillbitTheme
 import org.jetbrains.skia.EncodedImageFormat
 import java.io.File
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 /**
- * Renders the real shared UI off-screen and saves PNGs for the README, when
- * `DRILLBIT_SCREENSHOTS` points at a folder. Does nothing otherwise.
+ * Renders the real shared UI off-screen at desktop and phone sizes and checks each frame is a
+ * real picture. The PNGs land in `composeApp/build/screenshots`, or in the folder named by
+ * `DRILLBIT_SCREENSHOTS` (that is how the README images are made).
  */
 class ScreenshotTest {
-    private val folder = System.getenv("DRILLBIT_SCREENSHOTS")?.let(::File)
+    private val folder = File(System.getenv("DRILLBIT_SCREENSHOTS") ?: "build/screenshots")
 
     @Test
     fun designer() =
@@ -30,7 +32,7 @@ class ScreenshotTest {
 
     @Test
     fun naiveVersusOptimal() {
-        for (strategy in listOf(AssignmentStrategy.IN_ORDER, AssignmentStrategy.OPTIMAL)) {
+        for (strategy in AssignmentStrategy.entries) {
             shoot("desktop-morph-${strategy.name.lowercase()}", WIDE, atMillis = MID_WALK) {
                 selectSet(0)
                 openDraft(replace = false)
@@ -60,8 +62,7 @@ class ScreenshotTest {
         atMillis: Long = 0,
         setUp: DrillbitState.() -> Unit,
     ) {
-        val out = folder ?: return
-        out.mkdirs()
+        folder.mkdirs()
         val state = DrillbitState(demoShow(), initialMode = mode).apply(setUp)
         ImageComposeScene(size.first, size.second, Density(density)) {
             DrillbitTheme { DrillbitApp(state) }
@@ -69,7 +70,9 @@ class ScreenshotTest {
             scene.render(0)
             val image = scene.render(atMillis * NANOS_PER_MILLI)
             val png = image.encodeToData(EncodedImageFormat.PNG) ?: error("PNG encoding failed")
-            File(out, "$name.png").writeBytes(png.bytes)
+            // A blank or single-colour frame compresses to a few kilobytes; the real UI is far bigger.
+            assertTrue(png.size > MIN_PNG_BYTES, "$name rendered an empty-looking frame (${png.size} bytes)")
+            File(folder, "$name.png").writeBytes(png.bytes)
         }
     }
 
@@ -80,5 +83,6 @@ class ScreenshotTest {
         const val PERFORMER = 20
         const val MID_WALK = 1_700L
         const val NANOS_PER_MILLI = 1_000_000L
+        const val MIN_PNG_BYTES = 50_000
     }
 }
