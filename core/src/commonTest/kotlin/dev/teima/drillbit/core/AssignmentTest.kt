@@ -4,6 +4,7 @@ import dev.teima.drillbit.core.assign.solveAssignment
 import kotlin.random.Random
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class AssignmentTest {
@@ -40,6 +41,39 @@ class AssignmentTest {
         val result = solveAssignment(cost)
         assertEquals(n, result.toSet().size)
         assertTrue(totalCost(cost, result) < n * 0.1, "optimal cost of a random 200x200 matrix is small")
+    }
+
+    @Test
+    fun leavesSpareJobsUnusedInARectangularMatrix() {
+        val cost =
+            arrayOf(
+                doubleArrayOf(9.0, 1.0, 8.0, 7.0),
+                doubleArrayOf(1.0, 9.0, 9.0, 2.0),
+            )
+        val result = solveAssignment(cost)
+        assertEquals(listOf(1, 0), result.toList())
+        val random = Random(seed = 5)
+        repeat(100) {
+            val n = random.nextInt(1, 5)
+            val m = random.nextInt(n, 7)
+            val wide = Array(n) { DoubleArray(m) { random.nextInt(0, 30).toDouble() } }
+            val padded = Array(m) { i -> if (i < n) wide[i] else DoubleArray(m) }
+            assertEquals(bruteForce(padded), totalCost(wide, solveAssignment(wide)), 1e-9)
+        }
+    }
+
+    @Test
+    fun rejectsMatricesItCannotSolve() {
+        assertFailsWith<IllegalArgumentException> { solveAssignment(arrayOf(doubleArrayOf(1.0), doubleArrayOf(2.0))) }
+        assertFailsWith<IllegalArgumentException> {
+            solveAssignment(arrayOf(doubleArrayOf(1.0, 2.0), doubleArrayOf(3.0)))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            solveAssignment(arrayOf(doubleArrayOf(1.0, Double.NaN), doubleArrayOf(3.0, 4.0)))
+        }
+        assertFailsWith<IllegalArgumentException> {
+            solveAssignment(arrayOf(doubleArrayOf(1.0, Double.POSITIVE_INFINITY), doubleArrayOf(3.0, 4.0)))
+        }
     }
 
     private fun totalCost(
