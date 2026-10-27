@@ -106,7 +106,7 @@ class DrillbitState(
 
     private fun computeReports(): List<TransitionReport?> =
         listOf(null) +
-            show.sets.zipWithNext { previous, next -> analyzeTransition(previous.positions, next.positions, next.counts) }
+            show.sets.zipWithNext { from, to -> analyzeTransition(from.positions, to.positions, to.counts) }
 
     // Editing
 

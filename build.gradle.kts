@@ -25,10 +25,8 @@ allprojects {
     }
 }
 
-/**
- * Prints how much production Kotlin is shared: lines in commonMain versus platform source sets.
- * Counts non-blank lines that are not pure comments. Run with `./gradlew sharedCodeReport`.
- */
+// Prints how much production Kotlin is shared: lines in commonMain versus platform source sets.
+// Counts non-blank lines that are not pure comments. Run with `./gradlew sharedCodeReport`.
 tasks.register("sharedCodeReport") {
     group = "verification"
     description = "Counts shared (commonMain) versus platform-specific Kotlin lines."
