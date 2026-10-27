@@ -95,6 +95,18 @@ class PlannerTest {
     }
 
     @Test
+    fun squaringTheDistancesIsWhatRemovesTheCollisions() {
+        // The comparison the app shows: 64 performers from a block into "KOTLIN".
+        val from = BlockFormation().spots(64).map(Field.HIGH_SCHOOL::snap)
+        val plans = planMorph(from, TextFormation("KOTLIN"))
+        val collisions = plans.mapValues { (_, to) -> findCollisions(from, to).size }
+        assertEquals(56, collisions.getValue(AssignmentStrategy.IN_ORDER))
+        assertEquals(39, collisions.getValue(AssignmentStrategy.GREEDY))
+        assertEquals(21, collisions.getValue(AssignmentStrategy.MIN_DISTANCE))
+        assertEquals(0, collisions.getValue(AssignmentStrategy.OPTIMAL))
+    }
+
+    @Test
     fun demoShowIsCollisionFreeAndOptimal() {
         val show = demoShow()
         for (i in 1 until show.sets.size) {

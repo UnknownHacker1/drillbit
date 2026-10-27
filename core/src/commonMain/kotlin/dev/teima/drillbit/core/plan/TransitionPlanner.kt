@@ -16,11 +16,17 @@ enum class AssignmentStrategy(
     GREEDY("Nearest free spot"),
 
     /**
-     * Minimise the sum of squared distances (Hungarian algorithm). With synchronised
-     * straight-line moves this is the CAPT planner, which is collision-free when spots are
-     * far enough apart.
+     * Minimise the total distance walked (Hungarian algorithm on plain distances). Sounds
+     * optimal, but crossing paths can be just as short as parallel ones, so it still collides.
      */
-    OPTIMAL("Optimal (CAPT)"),
+    MIN_DISTANCE("Least total walking"),
+
+    /**
+     * Minimise the sum of *squared* distances (Hungarian algorithm). With synchronised
+     * straight-line moves this is the CAPT planner, which is provably collision-free when
+     * start and end spots are far enough apart (see [captSpacing]).
+     */
+    OPTIMAL("Least squared walking (CAPT)"),
 }
 
 /**
@@ -42,12 +48,24 @@ fun assignSpots(
             greedy(from, spots)
         }
 
+        AssignmentStrategy.MIN_DISTANCE -> {
+            hungarian(from, spots) { a, b -> a.distanceTo(b) }
+        }
+
         AssignmentStrategy.OPTIMAL -> {
-            val cost = Array(from.size) { i -> DoubleArray(spots.size) { j -> from[i].distanceSquaredTo(spots[j]) } }
-            val choice = solveAssignment(cost)
-            List(from.size) { spots[choice[it]] }
+            hungarian(from, spots) { a, b -> a.distanceSquaredTo(b) }
         }
     }
+}
+
+private fun hungarian(
+    from: List<Vec2>,
+    spots: List<Vec2>,
+    cost: (Vec2, Vec2) -> Double,
+): List<Vec2> {
+    val matrix = Array(from.size) { i -> DoubleArray(spots.size) { j -> cost(from[i], spots[j]) } }
+    val choice = solveAssignment(matrix)
+    return List(from.size) { spots[choice[it]] }
 }
 
 private fun greedy(
