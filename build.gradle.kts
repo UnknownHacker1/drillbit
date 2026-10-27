@@ -24,3 +24,48 @@ allprojects {
         }
     }
 }
+
+/**
+ * Prints how much production Kotlin is shared: lines in commonMain versus platform source sets.
+ * Counts non-blank lines that are not pure comments. Run with `./gradlew sharedCodeReport`.
+ */
+tasks.register("sharedCodeReport") {
+    group = "verification"
+    description = "Counts shared (commonMain) versus platform-specific Kotlin lines."
+    val root = layout.projectDirectory.asFile
+    doLast {
+        fun codeLines(dir: File): Int =
+            dir
+                .walkTopDown()
+                .filter { it.isFile && it.extension == "kt" }
+                .sumOf { file ->
+                    var inBlockComment = false
+                    file.readLines().count { raw ->
+                        val line = raw.trim()
+                        val isComment = inBlockComment || line.startsWith("//") || line.startsWith("/*")
+                        if (line.startsWith("/*")) inBlockComment = true
+                        if (inBlockComment && line.endsWith("*/")) inBlockComment = false
+                        line.isNotEmpty() && !isComment
+                    }
+                }
+
+        val shared =
+            mapOf(
+                "core/commonMain" to "core/src/commonMain",
+                "composeApp/commonMain" to "composeApp/src/commonMain",
+            )
+        val platform =
+            mapOf(
+                "composeApp/androidMain" to "composeApp/src/androidMain",
+                "composeApp/desktopMain" to "composeApp/src/desktopMain",
+                "composeApp/wasmJsMain" to "composeApp/src/wasmJsMain",
+                "androidApp/main" to "androidApp/src/main",
+            )
+        val counts = (shared + platform).mapValues { (_, path) -> codeLines(root.resolve(path)) }
+        val sharedTotal = shared.keys.sumOf { counts.getValue(it) }
+        val platformTotal = platform.keys.sumOf { counts.getValue(it) }
+        counts.forEach { (name, lines) -> println("%-26s %6d".format(name, lines)) }
+        val percent = 100.0 * sharedTotal / (sharedTotal + platformTotal)
+        println("Shared: $sharedTotal lines, platform: $platformTotal lines, shared = ${"%.1f".format(percent)}%")
+    }
+}
