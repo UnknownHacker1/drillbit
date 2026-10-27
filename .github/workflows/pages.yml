@@ -1,0 +1,44 @@
+# Builds the Kotlin/Wasm web app and publishes it to GitHub Pages.
+# Manual only: run it from the Actions tab ("Deploy web app" -> "Run workflow").
+# One-time setup: Settings -> Pages -> Build and deployment -> Source: GitHub Actions.
+name: Deploy web app
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Test shared code
+        run: ./gradlew :core:jvmTest :composeApp:desktopTest ktlintCheck
+      - name: Build web app
+        run: ./gradlew :composeApp:wasmJsBrowserDistribution
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: composeApp/build/dist/wasmJs/productionExecutable
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
