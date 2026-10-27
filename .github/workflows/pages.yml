@@ -26,7 +26,7 @@ jobs:
           java-version: "21"
       - uses: gradle/actions/setup-gradle@v4
       - name: Test shared code
-        run: ./gradlew :core:jvmTest :composeApp:desktopTest ktlintCheck
+        run: ./gradlew :core:jvmTest :core:wasmJsNodeTest :composeApp:desktopTest ktlintCheck
       - name: Build web app
         run: ./gradlew :composeApp:wasmJsBrowserDistribution
       - uses: actions/upload-pages-artifact@v3
