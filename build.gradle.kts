@@ -47,6 +47,12 @@ tasks.register("sharedCodeReport") {
                     }
                 }
 
+        fun filesUnder(dir: File): List<File> =
+            dir
+                .walkTopDown()
+                .filter { it.isFile }
+                .toList()
+
         val shared =
             mapOf(
                 "core/commonMain" to "core/src/commonMain",
@@ -64,6 +70,18 @@ tasks.register("sharedCodeReport") {
         val platformTotal = platform.keys.sumOf { counts.getValue(it) }
         counts.forEach { (name, lines) -> println("%-26s %6d".format(name, lines)) }
         val percent = 100.0 * sharedTotal / (sharedTotal + platformTotal)
-        println("Shared: $sharedTotal lines, platform: $platformTotal lines, shared = ${"%.1f".format(percent)}%")
+        println("Production Kotlin: shared $sharedTotal, platform $platformTotal, shared = ${"%.1f".format(percent)}%")
+
+        // Platform-only files that are not Kotlin: manifest, launcher icon, web page, app build script.
+        val platformExtras =
+            listOf("androidApp/src/main/res", "composeApp/src/wasmJsMain/resources")
+                .flatMap { dir -> filesUnder(root.resolve(dir)) } +
+                root.resolve("androidApp/src/main/AndroidManifest.xml") +
+                root.resolve("androidApp/build.gradle.kts")
+        val extraLines = platformExtras.sumOf { file -> file.readLines().count { it.isNotBlank() } }
+        val withExtras = 100.0 * sharedTotal / (sharedTotal + platformTotal + extraLines)
+        println(
+            "Counting platform XML/HTML/Gradle too ($extraLines lines): shared = ${"%.1f".format(withExtras)}%",
+        )
     }
 }
