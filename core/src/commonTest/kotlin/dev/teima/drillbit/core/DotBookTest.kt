@@ -44,6 +44,7 @@ class DotBookTest {
         assertEquals("6 to 5", Move(16.0, 12, "").stepSizeLabel)
         assertEquals("16 to 5", Move(8.0, 16, "").stepSizeLabel)
         assertEquals("hold", Move(0.0, 8, "").stepSizeLabel)
+        assertEquals("6.5 to 5", Move(16.0, 13, "").stepSizeLabel)
         assertEquals(StrideDifficulty.COMFORTABLE, Move(16.0, 16, "").difficulty)
         assertEquals(StrideDifficulty.LARGE, Move(16.0, 12, "").difficulty)
         assertEquals(StrideDifficulty.TOO_LARGE, Move(16.0, 8, "").difficulty)

@@ -38,7 +38,7 @@ data class Move(
      * 8 to 5 is the standard step, smaller N is a bigger step.
      */
     val stepSizeLabel: String
-        get() = if (isHold) "hold" else "${formatSteps(Field.STEPS_PER_FIVE_YARDS / stride)} to 5"
+        get() = if (isHold) "hold" else strideLabel(stride)
 
     val difficulty: StrideDifficulty
         get() =
@@ -145,6 +145,16 @@ fun describeDirection(delta: Vec2): String {
             else -> null
         }
     return listOfNotNull(forwardBack, sideways).joinToString(" and ")
+}
+
+/**
+ * A stride in steps per count as drill writers say it: "N to 5", N steps per five yards,
+ * to one decimal. 1.0 (a standard step) is "8 to 5".
+ */
+fun strideLabel(stride: Double): String {
+    val tenths = (Field.STEPS_PER_FIVE_YARDS / stride * TEN_INT).roundToInt()
+    val text = if (tenths % TEN_INT == 0) "${tenths / TEN_INT}" else "${tenths / TEN_INT}.${tenths % TEN_INT}"
+    return "$text to 5"
 }
 
 /** Formats steps with up to two decimals and no trailing zeros: 2.0 -> "2", 2.25 -> "2.25". */
