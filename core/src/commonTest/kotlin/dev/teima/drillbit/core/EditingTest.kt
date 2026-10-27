@@ -10,7 +10,6 @@ import dev.teima.drillbit.core.edit.reassign
 import dev.teima.drillbit.core.edit.setCounts
 import dev.teima.drillbit.core.edit.suggestedCounts
 import dev.teima.drillbit.core.geometry.Vec2
-import dev.teima.drillbit.core.model.Field
 import dev.teima.drillbit.core.plan.AssignmentStrategy
 import dev.teima.drillbit.core.playback.Timeline
 import dev.teima.drillbit.core.shapes.BlockFormation
@@ -39,7 +38,8 @@ class EditingTest {
     fun editsAreClampedAndBounded() {
         val show = demoShow()
         val moved = show.moveDot(1, 0, Vec2(-10.0, 999.0))
-        assertEquals(Vec2(0.0, Field.DEPTH), moved.sets[1].positions[0])
+        // The back sideline (85 1/3 steps) is not on the quarter-step grid; the last grid line inside is 85.25.
+        assertEquals(Vec2(0.0, 85.25), moved.sets[1].positions[0])
         assertEquals(128, show.setCounts(1, 10_000).sets[1].counts)
         assertEquals(1, show.setCounts(1, 0).sets[1].counts)
         val single = newShow("One", DEMO_ROSTER, BlockFormation())

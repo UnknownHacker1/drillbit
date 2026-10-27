@@ -1,6 +1,8 @@
 package dev.teima.drillbit.core.model
 
 import dev.teima.drillbit.core.geometry.Vec2
+import kotlin.math.floor
+import kotlin.math.round
 
 /**
  * An American football field measured in 8-to-5 steps (8 steps = 5 yards).
@@ -23,6 +25,17 @@ enum class Field(
     /** Keeps [point] inside the playing field. */
     fun clamp(point: Vec2): Vec2 = Vec2(point.x.coerceIn(0.0, LENGTH), point.y.coerceIn(0.0, DEPTH))
 
+    /**
+     * Keeps [point] on the field and on the quarter-step grid. Every spot the app creates goes
+     * through here, so a show survives the share code (which stores quarter steps) unchanged,
+     * including its assignment and its collision-free proof.
+     */
+    fun snap(point: Vec2): Vec2 {
+        val inside = clamp(point)
+        // floor(DEPTH * 4) / 4 keeps a rounded point inside the field.
+        return Vec2(toGrid(inside.x).coerceAtMost(LENGTH), toGrid(inside.y).coerceAtMost(floor(DEPTH * GRID) / GRID))
+    }
+
     companion object {
         const val STEPS_PER_FIVE_YARDS: Int = 8
 
@@ -36,6 +49,11 @@ enum class Field(
         const val CENTER_X: Double = LENGTH / 2
 
         val center: Vec2 = Vec2(CENTER_X, DEPTH / 2)
+
+        /** Grid divisions per step: positions are kept to the nearest quarter step. */
+        const val GRID: Double = 4.0
+
+        private fun toGrid(value: Double): Double = round(value * GRID) / GRID
     }
 }
 

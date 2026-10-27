@@ -5,6 +5,8 @@ import dev.teima.drillbit.core.codec.ShowCodec
 import dev.teima.drillbit.core.codec.extractShowCode
 import dev.teima.drillbit.core.codec.shareLink
 import dev.teima.drillbit.core.demo.demoShow
+import dev.teima.drillbit.core.model.Show
+import dev.teima.drillbit.core.plan.analyzeTransition
 import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -13,6 +15,24 @@ import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class CodecTest {
+    @Test
+    fun sharingKeepsEveryMoveExactlyTheSame() {
+        // Spots are snapped to the quarter-step grid when they are made, so the code is lossless
+        // and a scanned show gets the same proof badges as the drill writer's copy.
+        val show = demoShow()
+        val decoded = ShowCodec.decode(ShowCodec.encode(show))
+        assertEquals(show.sets.map { it.positions }, decoded.sets.map { it.positions })
+
+        fun Show.move(i: Int) = analyzeTransition(sets[i - 1].positions, sets[i].positions, sets[i].counts)
+        for (i in 1 until show.sets.size) {
+            val before = show.move(i)
+            val after = decoded.move(i)
+            assertTrue(before.provablySafe, "move into set ${i + 1} should be provably safe")
+            assertEquals(before.provablySafe, after.provablySafe)
+            assertEquals(before.collisions.size, after.collisions.size)
+        }
+    }
+
     @Test
     fun roundTripsTheDemoShowToAQuarterStep() {
         val show = demoShow()

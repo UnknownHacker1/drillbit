@@ -19,7 +19,7 @@ fun planMorph(
     formation: Formation,
     field: Field = Field.HIGH_SCHOOL,
 ): Map<AssignmentStrategy, List<Vec2>> {
-    val spots = formation.spots(from.size).map(field::clamp)
+    val spots = formation.spots(from.size).map(field::snap)
     return AssignmentStrategy.entries.associateWith { assignSpots(from, spots, it) }
 }
 
@@ -58,7 +58,7 @@ fun Show.moveDot(
     to: Vec2,
 ): Show =
     updateSet(setIndex) { set ->
-        set.copy(positions = set.positions.toMutableList().also { it[performer] = field.clamp(to) })
+        set.copy(positions = set.positions.toMutableList().also { it[performer] = field.snap(to) })
     }
 
 /**
@@ -101,7 +101,7 @@ fun newShow(
     field: Field = Field.HIGH_SCHOOL,
 ): Show {
     val performers = roster.flatMap { (section, count) -> (1..count).map { Performer(section, it) } }
-    val spots = opening.spots(performers.size).map(field::clamp)
+    val spots = opening.spots(performers.size).map(field::snap)
     return Show(title, tempoBpm, field, performers, listOf(DrillSet(opening.title, PHRASE * 2, spots)))
 }
 

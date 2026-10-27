@@ -158,5 +158,5 @@ private const val MAGIC_1 = 'B'.code
 private const val HEADER_SIZE = 3
 private const val CRC_SIZE = 4
 private const val BYTE = 0xFF
-private const val QUARTERS = 4.0
+private const val QUARTERS = Field.GRID
 private val CRC_SHIFTS = intArrayOf(24, 16, 8, 0)
