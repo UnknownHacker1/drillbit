@@ -8,7 +8,10 @@ both redirect to the same Google Form, "Kotlin Multiplatform Contest Submission 
 
 ## What the form asks, pre-written
 
-The form has three pages. Field names below are copied from the live form (read on 2026-10-27).
+The form has three pages. Field names below were copied from the live form on 2026-10-27.
+A second reviewer could only fetch page 1 (Email, Terms checkbox) and confirmed it matches.
+**Pages 2 and 3 must be re-checked live** when you open the form: Google Forms can change, so
+compare each field name and required flag with the tables below before pasting.
 
 ### Page 1
 
@@ -33,19 +36,23 @@ keys or accounts, and runs on Android, Desktop and Web.
 **Essay about your background** (required; "Tell us about your background, the idea behind your
 project, and the technologies you used to develop it." The rules ask for about 300 words.)
 
-Paste the essay below. It is a draft in your voice: read it, change anything that is not
-exactly true for you, and add one personal sentence if you have a real connection to marching
-band, dance, or drone shows. The rules also say the essay should cover hobbies; add one line
-about yours. Word count of the draft: 308.
+Paste the essay below. The rules (Step 3) ask for "a 300-word essay" covering educational and
+professional background, coding experience, hobbies "if relevant to the topic of the submission",
+and the idea and technologies. They do not say whether 300 is a cap, so treat it as one.
+
+The draft is 279 words without the `[[...]]` line. **Replace that line with your own sentence of
+21 words or fewer** (work or internship experience, and a hobby only if it relates to the
+project; if you have none, say so briefly), then recount. Read every sentence and change
+anything that is not exactly true for you.
 
 ```
-I'm Abdelrahman Teima, a computer science sophomore at the University of Southern Mississippi. Most of my programming has been competitive programming in C++ and Python; this year my team won the ICPC South USA regional. That taught me to love algorithms, and left me wanting to build something people actually hold in their hands. Kotlin was new to me when I started this project.
+I'm Abdelrahman Teima, a computer science sophomore at the University of Southern Mississippi. Most of my programming has been competitive programming in C++ and Python; this year my team won the ICPC South USA regional. [[One line: any work or internship experience, and a hobby if it relates to the project. Or say you have none yet.]] Kotlin was new to me when I started this project.
 
-Drillbit is a formation designer for marching bands and anyone who moves a group of people across a field. You type a word or pick a shape, and the app decides which of the 64 performers walks to which spot so that nobody collides. Under the hood that is the Hungarian algorithm minimising the sum of squared distances. A paper from robotics (CAPT, Turpin, Michael and Kumar) proves that this choice is collision-free when everyone starts and stops together and walks in straight lines, which is exactly how a band moves between sets. Drillbit also checks every pair exactly, so you can watch a naive plan collide dozens of times and the optimal one never.
+Drillbit is a formation designer for marching bands. You type a word or pick a shape, and the app decides which of the 64 performers walks to which spot. It uses the Hungarian algorithm to minimise the sum of squared distances. A robotics result, CAPT (Turpin, Michael and Kumar), proves this keeps straight, synchronised paths at least one step apart whenever spots start and end at least 1.41 steps apart, which is how a band moves between sets. Drillbit also checks every pair of paths exactly. Moving a block into "KOTLIN", drawing order gives 56 collisions, minimising plain distance still gives 21, and squared distance gives none.
 
-The second half of the app is for the performers. Every member gets their own dot book: yard-line coordinates, step size in band language ("6 to 5") and direction, set by set. The drill writer works on a laptop, performers need a phone on the field, so the designer shows a QR code that carries the entire show, compressed with my own binary codec and drawn by a QR encoder I wrote from the spec. Scanning it opens the web version with nothing to install, no server and no account.
+The second half is for performers. Each member gets their own dot book: yard-line position, step size in band language ("6 to 5") and direction, set by set. The drill writer works on a laptop and performers need a phone on the field, so the app shows a QR code carrying the whole show, packed with my own binary codec and drawn by a QR encoder I wrote from the spec. Scanning it opens the web version with no install and no account.
 
-Everything is Kotlin Multiplatform with Compose Multiplatform: the model, planner, codec, QR encoder and the whole UI live in common code and run on Android, desktop and the browser through Kotlin/Wasm. Platform code is only storage, sound and clipboard.
+Everything is Kotlin Multiplatform with Compose Multiplatform. The model, planner, codec, QR encoder and the whole UI are common code, so one planner and one codec run on Android, desktop and the browser through Kotlin/Wasm. Platform code is only storage, sound and the clipboard.
 ```
 
 **Link to short screencast (three to five minutes long)** (optional, but recommended by the rules)
@@ -64,7 +71,7 @@ Record one (script below), upload to YouTube as Unlisted, paste the link. If you
 
 `SUBMISSION/screens/` has captures from three platforms, all real renders of this build:
 
-- `desktop-*.png`, `phone-*.png`: rendered by the desktop test (`DRILLBIT_SCREENSHOTS=<dir> ./gradlew :composeApp:desktopTest`).
+- `desktop-*.png`, `phone-*.png`: rendered by the desktop screenshot tests (`DRILLBIT_SCREENSHOTS=<dir> ./gradlew :composeApp:desktopTest`; without the variable they go to `composeApp/build/screenshots`).
 - `android-*.png`: the debug APK on the Android 16 emulator (Medium Phone, API 36).
 - `web-*.png`: the Kotlin/Wasm production build in a browser. The URL in `web-share-qr.png` is a
   localhost one; on GitHub Pages it becomes `https://unknownhacker1.github.io/drillbit/#show=...`.
