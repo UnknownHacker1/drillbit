@@ -34,7 +34,6 @@ import dev.teima.drillbit.core.model.Field
 import dev.teima.drillbit.core.plan.AssignmentStrategy
 import dev.teima.drillbit.core.plan.MAX_COMFORTABLE_STRIDE
 import dev.teima.drillbit.core.plan.TransitionReport
-import dev.teima.drillbit.core.plan.captSpacing
 import dev.teima.drillbit.ui.components.Badge
 import dev.teima.drillbit.ui.components.PanelCard
 import dev.teima.drillbit.ui.components.StatRow
@@ -65,7 +64,7 @@ fun DesignPanel(
 private fun QuickActions(state: DrillbitState) {
     PanelCard("Formations") {
         Text(
-            "Pick a shape or type a word. Drillbit works out who walks where so nobody collides.",
+            "Pick a shape or type a word. Drillbit works out who walks where and checks every path for collisions.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -156,11 +155,7 @@ private fun StrategyRow(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(strategy.displayName, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f))
-            if (report.isCollisionFree) {
-                Badge(if (report.provablySafe) "PROVABLY SAFE" else "NO COLLISIONS", DrillbitColors.Safe)
-            } else {
-                Badge("${report.collisions.size} COLLISIONS", DrillbitColors.Danger)
-            }
+            SafetyBadge(report, short = true)
         }
         val longest = formatSteps(report.longestDistance)
         Text(
@@ -196,7 +191,7 @@ private fun TransitionCard(state: DrillbitState) {
                 OutlinedButton(onClick = { state.changeCounts(COUNT_STEP) }) { Text("+4") }
             }
             val collisionColor = if (report.isCollisionFree) DrillbitColors.Safe else DrillbitColors.Danger
-            StatRow("Collisions", if (report.isCollisionFree) "none" else "${report.collisions.size}", collisionColor)
+            StatRow("Collisions (exact check)", "${report.collisions.size}", collisionColor)
             val stride = report.largestStride
             val strideColor =
                 when {
@@ -209,15 +204,8 @@ private fun TransitionCard(state: DrillbitState) {
             StatRow("Biggest step", strideText, strideColor)
             StatRow("Total walking", "${report.totalTravel.toInt()} steps")
             StatRow("Tightest interval", "${formatSteps(report.tightestSpacing)} steps")
-            if (report.provablySafe) {
-                Badge("PROVABLY COLLISION-FREE", DrillbitColors.Safe)
-                Text(
-                    "Optimal assignment with every spot at least ${formatSteps(captSpacing())} steps apart: " +
-                        "by the CAPT theorem these straight-line paths cannot cross at the same time.",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
+            SafetyBadge(report, short = false)
+            Text(safetyExplanation(report), fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (stride > MAX_COMFORTABLE_STRIDE + EPSILON) {
                     OutlinedButton(onClick = state::fixCounts) { Text("Fix counts") }
@@ -225,6 +213,41 @@ private fun TransitionCard(state: DrillbitState) {
                 OutlinedButton(onClick = state::optimizeEverything) { Text("Optimize all moves") }
                 TextButton(onClick = state::deleteSelectedSet) { Text("Delete set", color = DrillbitColors.Danger) }
             }
+        }
+    }
+}
+
+/** "Provably safe" only when the CAPT condition holds; otherwise the result of the exact check. */
+@Composable
+private fun SafetyBadge(
+    report: TransitionReport,
+    short: Boolean,
+) {
+    when {
+        report.provablySafe -> Badge(if (short) "PROVABLY SAFE" else "PROVABLY COLLISION-FREE", DrillbitColors.Safe)
+        report.isCollisionFree -> Badge("CHECKED: 0 COLLISIONS", DrillbitColors.Safe)
+        else -> Badge("${report.collisions.size} COLLISIONS", DrillbitColors.Danger)
+    }
+}
+
+private fun safetyExplanation(report: TransitionReport): String {
+    val spacing = formatSteps(report.tightestSpacing)
+    val required = formatSteps(report.requiredSpacing)
+    val checked = "The exact pairwise check finds ${report.collisions.size} collisions."
+    return when {
+        report.provablySafe -> {
+            "Squared-distance optimal assignment, and every start and end spot is at least $spacing steps apart " +
+                "(the CAPT proof needs $required). So these straight, synchronised paths stay at least " +
+                "1 step apart by proof. $checked"
+        }
+
+        !report.optimalAssignment -> {
+            "No proof for this move: the assignment is not the squared-distance optimum " +
+                "(Optimize all moves fixes that). $checked"
+        }
+
+        else -> {
+            "No proof for this move: spots are only $spacing steps apart and the CAPT proof needs $required. $checked"
         }
     }
 }

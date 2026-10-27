@@ -91,10 +91,14 @@ data class TransitionReport(
     val collisions: List<Collision>,
     /** Smallest distance between two spots in the start or end formation. */
     val tightestSpacing: Double,
+    /** Whether nobody could be reassigned to lower the sum of squared distances. */
+    val optimalAssignment: Boolean,
+    /** The spacing the CAPT proof needs for this clearance: `2 * sqrt(2) * R`, R = clearance / 2. */
+    val requiredSpacing: Double,
     /**
-     * True when the CAPT theorem applies: spots at both ends are at least `2 * sqrt(2) * R`
-     * apart (R = half the clearance) *and* the assignment is the squared-distance optimum.
-     * Then the move is collision-free by proof, not just by test.
+     * True when the CAPT theorem applies: the assignment is the squared-distance optimum *and*
+     * spots at both ends are at least [requiredSpacing] apart. Then the straight, synchronised
+     * paths keep the clearance by proof. [collisions] is an independent exact check either way.
      */
     val provablySafe: Boolean,
 ) {
@@ -121,6 +125,7 @@ fun analyzeTransition(
     val distances = from.indices.map { from[it].distanceTo(to[it]) }
     val longest = distances.indices.maxByOrNull { distances[it] } ?: 0
     val spacing = minOf(tightestSpacing(from), tightestSpacing(to))
+    val required = captSpacing(clearance)
     return TransitionReport(
         counts = counts,
         totalTravel = distances.sum(),
@@ -128,7 +133,9 @@ fun analyzeTransition(
         longestDistance = distances.getOrElse(longest) { 0.0 },
         collisions = findCollisions(from, to, clearance),
         tightestSpacing = spacing,
-        provablySafe = optimal && spacing >= captSpacing(clearance),
+        optimalAssignment = optimal,
+        requiredSpacing = required,
+        provablySafe = optimal && spacing >= required,
     )
 }
 

@@ -87,7 +87,7 @@ fun StatRow(
     }
 }
 
-/** A small rounded tag, e.g. "PROVABLY SAFE". */
+/** A small rounded tag, e.g. "PROVABLY SAFE" or "CHECKED: 0 COLLISIONS". */
 @Composable
 fun Badge(
     text: String,
