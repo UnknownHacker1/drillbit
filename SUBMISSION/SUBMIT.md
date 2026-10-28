@@ -88,26 +88,24 @@ Record one (script below), upload to YouTube as Unlisted, paste the link. If you
 
 1. **Read the code and the essay, make them yours** (45-90 min). You will be asked about this
    project if you win. Run it on all three targets once (commands in the README). Edit the essay.
-2. **Create the GitHub repo and push** (10 min).
+2. **Publish: repo, web app and APK in one command** (2 min of your time, about 15 min of waiting).
+   In PowerShell:
    ```
-   gh repo create UnknownHacker1/drillbit --public --source . --remote origin
-   git push -u origin main
+   & "C:\Dev\AI Automation\hackathons\kmp-contest\publish.ps1"
    ```
+   It creates the public repo `UnknownHacker1/drillbit` and pushes `main`, turns on GitHub Pages
+   with GitHub Actions as the source, runs the "Deploy web app" workflow and waits for it (tests,
+   Wasm build, publish to `https://unknownhacker1.github.io/drillbit/`), builds the debug APK and
+   attaches it to release v1.0.0, then checks the page answers. Every step is skipped when already
+   done, so re-running is safe. `-NoApk` skips the release, `-Redeploy` reruns the workflow,
+   `-DryRun` only checks. If GitHub refuses the workflow file (missing `workflow` scope), it
+   prints the two `gh auth` commands to fix that.
    If you use a different repo name or account, change `PUBLIC_WEB_APP_URL` in
    `composeApp/src/commonMain/kotlin/dev/teima/drillbit/platform/Platform.kt` (desktop and
    Android share links point there) and the links in README.md, then commit.
-3. **Publish the web app on GitHub Pages** (10 min, recommended: judges can try it without
-   installing anything).
-   - Repo Settings -> Pages -> Build and deployment -> Source: **GitHub Actions**.
-   - Actions tab -> "Deploy web app" -> Run workflow. It runs the tests, builds the Wasm app and
-     publishes it to `https://unknownhacker1.github.io/drillbit/`.
-   - Open that URL on your phone and on a laptop to check it loads (needs a browser with
-     WebAssembly GC: current Chrome, Edge, Firefox, Safari 18.2+).
-4. **Attach the APK to a GitHub release** (5 min, optional but nice for judges with Android phones).
-   ```
-   ./gradlew :androidApp:assembleDebug
-   gh release create v1.0.0 androidApp/build/outputs/apk/debug/androidApp-debug.apk --title "Drillbit 1.0.0" --notes "Debug APK for Android 8.0+"
-   ```
+3. **Check the web app** on your phone and a laptop (needs a browser with WebAssembly GC: current
+   Chrome, Edge, Firefox, Safari 18.2+).
+4. (folded into step 2)
 5. **Record the screencast** (45-60 min, optional). Script: SUBMISSION/SCREENCAST.md.
 6. **Submit the form** (10 min). Copy the fields above. Screenshot the confirmation page.
 7. **Join the contest Slack channel** for announcements:
